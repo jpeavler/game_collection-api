@@ -37,26 +37,26 @@ const getBoardGames = () => {
 //Read one board game by id
 const getBoardGame = (id) =>{
     const myPromise = new Promise((resolve, reject) => {
-        MongoClient.connect(url, settings, function(err, client) {
+        MongoClient.connect(url, settings, async function(err, client) {
             if(err){
                 reject(err);
             } else{
                 console.log(`Connected successfully to server to Get Board Game with ID: ${id}`);
                 const db = client.db(dbName);
                 const collection = db.collection(colName);
-                collection.findOne({_id: id}).toArray(function(err, doc) {
-                    if(err){
-                        reject(err);
-                    } else{
-                        console.log("Found the folowing Board Game");
-                        console.log(doc);
-                        resolve(doc);
-                        client.close();
-                    }
-                })
+                try{
+                    const _id = new ObjectID(id);
+                    const result = await collection.findOne({_id});
+                    resolve(result);
+                    console.log(result);
+                    client.close();
+                }catch(err){
+                    reject(err);
+                }            
             }
-        })
-    })
+        }
+    )})
+    return myPromise;
 }
 
 module.exports = {
