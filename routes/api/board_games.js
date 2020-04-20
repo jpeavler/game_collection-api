@@ -15,6 +15,7 @@ router.get('/', async function(req, res, next) {
         res.send(500, 'Internal Server Issue, check logs');
     }
 });
+// GET a single Game by ID
 router.get('/:id', async function(req, res, next) {
     try{
         const data = await getBoardGame(req.params.id);
