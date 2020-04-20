@@ -2,7 +2,8 @@ var express = require('express');
 var router = express.Router();
 const {
     getBoardGames,
-    getBoardGame
+    getBoardGame,
+    addBoardGame
 } = require('../../data/board_games')
 
 // GET Game Collection listing
@@ -25,5 +26,19 @@ router.get('/:id', async function(req, res, next) {
         res.send(500, 'Internal Server Issue, check logs');
     }
 })
+// POST board game creation
+router.post('/', async function(req, res, next) {
+    try{
+        const data = await addBoardGame(req.body);
+        res.send(data);
+    }catch(err){
+        if(err.error){
+            res.status(400).send(err);
+        }else{
+                console.log(err);
+                res.status(500).send('Internal Server Issue, check logs');
+            }
+    }
+});
 
 module.exports = router;

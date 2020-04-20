@@ -9,6 +9,19 @@ const settings = { useUnifiedTopology: true};
 const dbName = 'game_collection';
 const colName = 'board_games';
 
+// Board Game Validator Function (Name, Number of players min, and Number of players max required)
+const invalidBoardGame = (boardGame) => {
+    let result;
+    if(!boardGame.name){
+        result = 'Board Game requires a Name';
+    }else if(!boardGame.num_players_max){
+        result = 'Board Game requires a Max amount of players'  //TODO: add check for number values for Max and Min
+    }else if(!boardGame.num_players_min){
+        result = 'Board Game requires a Min amount of players'
+    }
+    return result;  //Note: if the board game is valid, result will return undefined
+}
+
 //Read all BoardGames
 const getBoardGames = () => {
     const myPromise = new Promise((resolve, reject) => {
@@ -59,7 +72,46 @@ const getBoardGame = (id) =>{
     return myPromise;
 }
 
+const addBoardGame = (boardGames) =>{
+    const myPromise = new Promise ((resolve, reject) => {
+        if(!Array.isArray(boardGames)){
+            reject({error: 'Need to send an Array of Board Games'});
+        } else {
+            const invalidBoardGames = boardGames.filter((boardGame) => {
+                const check = invalidBoardGame(boardGame);  //Check will be undefined if the board game is valid
+                if(check){
+                    boardGame.invalid = check;
+                }
+                return boardGame.invalid;
+            });
+            if(invalidBoardGames.length > 0){
+                reject({
+                    error: 'Some Board Games were invalid',
+                    data: invalidBoardGames
+                })
+            }else {
+                MongoClient.connect(url, settings, async function(err, client){
+                    if(err){
+                        reject(err);
+                    }else{
+                        console.log('Connected successfully to server to POST a Board Game.');
+                        const db = client.db(dbName);
+                        const collection = db.collection(colName);
+                        boardGames.forEach((boardGame) =>{
+                            boardGame.dateAdded = new Date(Date.now()).toUTCString();
+                        });
+                        const results = await collection.insertMany(boardGames);
+                        resolve(results.ops);
+                    }
+                });
+            }
+        }
+    });
+    return myPromise;
+}
+
 module.exports = {
     getBoardGames,
-    getBoardGame
+    getBoardGame,
+    addBoardGame
 }
