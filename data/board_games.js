@@ -110,8 +110,39 @@ const addBoardGame = (boardGames) =>{
     return myPromise;
 }
 
+const deleteBoardGame = (id) => {
+    const Promise = new Promise((resolve, reject) =>{
+        MongoClient.connect(url, settings, async function(err, client) {
+            if(err){
+                reject(err);
+            }else{
+                console.log('Connected to server to Delete a Board Game');
+                const db = client.db(dbName);
+                const collection = db.collection(colName);
+                try{
+                    const _id = new ObjectID(id);
+                    collection.findOneAndDelete({_id}, function (err, data) {
+                        if(err){
+                            reject(err);
+                        }else{
+                            if(data.lastErrorObject.n > 0){
+                                resolve(data.value);
+                            }else{
+                                resolve({error: 'ID does not exist in database'});
+                            }
+                        }
+                    })
+                }catch(err){
+                    reject({ error: "ID has to be in ObjectID format"})
+                }
+            }
+        })
+    })
+}
+
 module.exports = {
     getBoardGames,
     getBoardGame,
-    addBoardGame
+    addBoardGame,
+    deleteBoardGame
 }
