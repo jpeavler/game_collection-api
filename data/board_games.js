@@ -111,7 +111,7 @@ const addBoardGame = (boardGames) =>{
 }
 
 const deleteBoardGame = (id) => {
-    const Promise = new Promise((resolve, reject) =>{
+    const myPromise = new Promise((resolve, reject) =>{
         MongoClient.connect(url, settings, async function(err, client) {
             if(err){
                 reject(err);
@@ -138,6 +138,7 @@ const deleteBoardGame = (id) => {
             }
         })
     })
+    return myPromise;
 }
 
 module.exports = {
