@@ -110,6 +110,47 @@ const addBoardGame = (boardGames) =>{
     return myPromise;
 }
 
+const updateBoardGame = (id, boardGame) => {
+    const myPromise = new Promise((resolve, reject) => {
+        MongoClient.connect(url, settings, async function(err, client) {
+            if(err){
+                reject(err);
+            }else{
+                console.log('Connected to server to Update a Board Game');
+                const db = client.db(dbName);
+                const collection = db.collection(colName);
+                try{
+                    const _id = new ObjectID(id);
+                    collection.updateOne({_id},
+                        { $set: {...boardGame} },
+                         function (err, data) {
+                        if(err){
+                            reject(err);
+                        }else{
+                            if(data.result.n > 0){
+                                collection.find({_id}).toArray(
+                                    function(err, docs){
+                                        if(err){
+                                            reject(err);
+                                        }else{
+                                            resolve(docs[0]);
+                                        }
+                                    }
+                                )
+                            } else{
+                                resolve({error: "Nothing Happened"})
+                            }
+                        }
+                    });
+                }catch(err){
+                    reject({error: 'ID has to be in Object Format'})
+                }
+            }
+        })
+    })
+    return myPromise;
+}
+
 const deleteBoardGame = (id) => {
     const myPromise = new Promise((resolve, reject) =>{
         MongoClient.connect(url, settings, async function(err, client) {
@@ -145,5 +186,6 @@ module.exports = {
     getBoardGames,
     getBoardGame,
     addBoardGame,
-    deleteBoardGame
+    deleteBoardGame,
+    updateBoardGame
 }
